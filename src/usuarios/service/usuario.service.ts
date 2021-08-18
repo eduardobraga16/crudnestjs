@@ -1,32 +1,41 @@
 import { Injectable } from '@nestjs/common';
 import { Usuario } from '../dto/usuario';
 
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+
 @Injectable()
 export class UsuarioService {
-    usuarios:  Usuario[] = [
-        {nome:'eduardo', email:'edu@gmail.com',senha:'123',ativo:true},
-        {nome:'braga', email:'braga@gmail.com',senha:'123',ativo:true},
-        {nome:'higino', email:'higino@gmail.com',senha:'123',ativo:true},
-    ];
-
-    getAll(){
-        return this.usuarios;
-    }
-
-    getById(id: number){
+    constructor(
+        @InjectModel('Usuario') private readonly usuarioModel : Model<Usuario>
+    ){
 
     }
 
-    create(usuario: Usuario){
-
+    async getAll(){
+        return await this.usuarioModel.find().exec();
     }
 
-    update(usuario: Usuario, id: number){
-
+    async getById(id: string){
+        return await this.usuarioModel.findById(id).exec();
     }
 
-    delete(id: number){
+    async getByEmail(email: string){
+        return await this.usuarioModel.findOne({email}).exec();
+    }
 
+    async create(usuario: Usuario){
+        const criarUsuario = new this.usuarioModel(usuario);
+        return await criarUsuario.save();
+    }
+
+    async update(id: string, usuario: Usuario){
+        await this.usuarioModel.updateOne({_id: id},usuario).exec();
+        return this.getById(id);
+    }
+
+    async delete(id: string){
+        return await this.usuarioModel.deleteOne({_id:id}).exec();
     }
 
 }
